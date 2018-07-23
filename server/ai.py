@@ -38,6 +38,7 @@ def VGG2RGB(x):
 
 session = keras.backend.get_session()
 
+print("---------1111111111111111111111111111--------")
 
 with tf.device(device_A):
 
@@ -77,6 +78,7 @@ with tf.device(device_A):
     neck_op = VGG2RGB(neck_temp)
 
 
+print("---------2222222222222222222222--------")
 with tf.device(device_B):
 
     ip3B = tf.placeholder(dtype=tf.float32, shape=(None, None, None, 3))
@@ -86,16 +88,27 @@ with tf.device(device_B):
     tail_op = tail(tf.pad(ip3B / 255.0, [[0, 0], [pads, pads], [pads, pads], [0, 0]], 'REFLECT'))[:, pads*2:-pads*2, pads*2:-pads*2, :] * 255.0
 
 
-session.run(tf.global_variables_initializer())
+print("---------333333333333333333333333333333333333333--------")
+tf.train.write_graph(session.graph_def,'.','style2paints.org.pbtxt', as_text=True)
+#session.run(tf.global_variables_initializer())
 
-
+print("------------44444444444444444444444--------------------")
 tail.load_weights('tail.net')
+print("------------55555555555555555555555555--------------------")
 baby.load_weights('baby.net')
+print("------------666666666666666666666666--------------------")
 head.load_weights('head.net')
+print("------------7777777777777777777777777--------------------")
 neck.load_weights('neck.net')
+print("------------88888888888888888888888--------------------")
 girder.load_weights('girder.net')
+print("-----------9999999999999999999999--------------------")
 reader.load_weights('reader.net')
 
+print("------------00000000000000000000000000000000--------------------")
+
+saver = tf.train.Saver()
+saver.save(session, 'my-model', global_step=0)
 
 def go_head(sketch, global_hint, local_hint, global_hint_x, alpha):
     return session.run(head_op, feed_dict={
