@@ -36,10 +36,12 @@ def VGG2RGB(x):
     return (x + [103.939, 116.779, 123.68])[:, :, :, ::-1]
 
 
+print("---------00000000000000000-----")
+# use 2.0.8 keara, otherwise, get_session() will fail due to graph is empty. don't know why.
 session = keras.backend.get_session()
 
 print("---------1111111111111111111111111111--------")
-
+print(device_A + ",,,,,,," + device_B)
 with tf.device(device_A):
 
     ipa = tf.placeholder(dtype=tf.float32, shape=(None, 1))
@@ -75,7 +77,9 @@ with tf.device(device_A):
     feed[0] = tf.clip_by_value(1 - tf.image.resize_bilinear(ToGray(VGG2RGB(head_temp) / 255.0), tf.shape(ip1)[1:3]), 0.0, 1.0)
     nil4, nil5, head_temp = neck(feed)
     head_op = VGG2RGB(head_temp)
+    head_finder = tf.add(head_op, head_op, name="head_finder")
     neck_op = VGG2RGB(neck_temp)
+    
 
 
 print("---------2222222222222222222222--------")
@@ -89,8 +93,9 @@ with tf.device(device_B):
 
 
 print("---------333333333333333333333333333333333333333--------")
-tf.train.write_graph(session.graph_def,'.','style2paints.org.pbtxt', as_text=True)
-#session.run(tf.global_variables_initializer())
+session.run(tf.global_variables_initializer())
+tf.train.write_graph(session.graph,'.','style2paints.org.pbtxt', as_text=True)
+tf.train.write_graph(session.graph,'.','style2paints.org.pb', as_text=False)
 
 print("------------44444444444444444444444--------------------")
 tail.load_weights('tail.net')
@@ -108,7 +113,7 @@ reader.load_weights('reader.net')
 print("------------00000000000000000000000000000000--------------------")
 
 saver = tf.train.Saver()
-saver.save(session, 'my-model', global_step=0)
+saver.save(session, './model_ckt/my-model', global_step=0)
 
 def go_head(sketch, global_hint, local_hint, global_hint_x, alpha):
     return session.run(head_op, feed_dict={
