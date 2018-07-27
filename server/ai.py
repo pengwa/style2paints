@@ -56,9 +56,11 @@ with tf.device(device_A):
     baby_alpha = tf.where(x=tf.zeros_like(ip4[:, :, :, 3:4]), y=tf.ones_like(ip4[:, :, :, 3:4]), condition=tf.less(ip4[:, :, :, 3:4], 128))
     baby_hint = baby_alpha * baby_yuv + (1 - baby_alpha) * baby_place
     baby_op = YUV2RGB(baby(tf.concat([ip1, baby_hint], axis=3)))
+    baby_finder = tf.add(baby_op, baby_op, name="baby_finder")
 
     girder = load_model('girder.net')
     gird_op = (1 - girder([1 - ip1 / 255.0, ip4, 1 - ip3 / 255.0])) * 255.0
+    gird_finder = tf.add(gird_op, gird_op, name="gird_finder")
 
     reader = load_model('reader.net')
     features = reader(ip3 / 255.0)
@@ -79,6 +81,7 @@ with tf.device(device_A):
     head_op = VGG2RGB(head_temp)
     head_finder = tf.add(head_op, head_op, name="head_finder")
     neck_op = VGG2RGB(neck_temp)
+    neck_finder = tf.add(neck_op, neck_op, name="neck_finder")
     
 
 
@@ -90,6 +93,7 @@ with tf.device(device_B):
     tail = load_model('tail.net')
     pads = 7
     tail_op = tail(tf.pad(ip3B / 255.0, [[0, 0], [pads, pads], [pads, pads], [0, 0]], 'REFLECT'))[:, pads*2:-pads*2, pads*2:-pads*2, :] * 255.0
+    tail_finder = tf.add(tail_op, tail_op, name="tail_finder")
 
 
 print("---------333333333333333333333333333333333333333--------")
